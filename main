@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Contratos CNH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .dashboard {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #1e3c72;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 15px;
+            padding: 35px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.4);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(30, 60, 114, 0.6);
+        }
+
+        .card-title {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            color: white;
+            font-size: 56px;
+            font-weight: bold;
+            margin: 15px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .info-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            color: white;
+        }
+
+        /* Tooltip Styles */
+        .tooltip {
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+            width: 320px;
+            z-index: 1000;
+            transform: translateX(-50%) translateY(10px);
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 12px solid transparent;
+            border-top-color: white;
+        }
+
+        .card-container:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .tooltip-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #1e3c72;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tooltip-section {
+            margin-bottom: 15px;
+        }
+
+        .tooltip-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #999;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .tooltip-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .tooltip-item:last-child {
+            border-bottom: none;
+        }
+
+        .tooltip-label {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .activo {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+
+        .inactivo {
+            background: #ef4444;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        }
+
+        .tooltip-value {
+            color: #1e3c72;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .divider {
+            margin: 15px 0;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .tipo-icon {
+            font-size: 16px;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .tooltip {
+                width: 280px;
+            }
+            
+            .dashboard {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Contratos CNH</h1>
+            <p>Comisión Nacional de Hidrocarburos</p>
+        </div>
+        
+        <div class="card-container">
+            <div class="card">
+                <div class="card-title">Total de Contratos</div>
+                <div class="card-value" id="totalContratos">0</div>
+                <div class="card-subtitle">
+                    Registro actualizado
+                    <span class="info-icon">i</span>
+                </div>
+            </div>
+
+            <div class="tooltip">
+                <div class="tooltip-header">
+                    📊 Detalle de Contratos
+                </div>
+                
+                <div class="tooltip-section">
+                    <div class="section-title">Estado del Registro</div>
+                    <div class="tooltip-item">
+                        <span class="tooltip-label">
+                            <span class="status-dot activo"></span>
+                            Alta de registro
+                        </span>
+                        <span class="tooltip-value" id="altaRegistro">0</span>
+                    </div>
+                    
+                    <div class="tooltip-item">
+                        <span class="tooltip-label">
+                            <span class="status-dot inactivo"></span>
+                            Baja de registro
+                        </span>
+                        <span class="tooltip-value" id="bajaRegistro">0</span>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="tooltip-section">
+                    <div class="section-title">Estatus de Contratos</div>
+                    <div class="tooltip-item">
+                        <span class="tooltip-label">
+                            <span class="status-dot activo"></span>
+                            Activos
+                        </span>
+                        <span class="tooltip-value" id="activos">0</span>
+                    </div>
+                    
+                    <div class="tooltip-item">
+                        <span class="tooltip-label">
+                            <span class="status-dot inactivo"></span>
+                            Inactivos
+                        </span>
+                        <span class="tooltip-value" id="inactivos">0</span>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="tooltip-section">
+                    <div class="section-title">Tipo de Contrato</div>
+                    <div class="tooltip-item">
+                        <span class="tooltip-label">
+                            <span class="tipo-icon">📄</span>
+                            Licencia
+                        </span>
+                        <span class="tooltip-value" id="tipoLicencia">0</span>
+                    </div>
+                    
+                    <div class="tooltip-item">
+                        <span class="tooltip-label">
+                            <span class="tipo-icon">🤝</span>
+                            Producción compartida
+                        </span>
+                        <span class="tooltip-value" id="tipoProduccion">0</span>
+                    </div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div class="tooltip-section">
+                    <div class="section-title">Derechos</div>
+                    <div class="tooltip-item">
+                        <span class="tooltip-label">
+                            <span class="tipo-icon">🔍</span>
+                            Exploración y Extracción
+                        </span>
+                        <span class="tooltip-value" id="exploracionExtraccion">0</span>
+                    </div>
+                    
+                    <div class="tooltip-item">
+                        <span class="tooltip-label">
+                            <span class="tipo-icon">⚡</span>
+                            Solo Extracción
+                        </span>
+                        <span class="tooltip-value" id="soloExtraccion">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos cargados desde el CSV
+        const datosContratos = [{"idContratista": "C073", "idContrato": "RF-C073-2018-041", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C072", "idContrato": "RF-C072-2018-040", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C066", "idContrato": "RF-C066-2018-038", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C059", "idContrato": "RF-C059-2018-039", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C071", "idContrato": "RF-C071-2018-037", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C071", "idContrato": "RF-C071-2018-036", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C070", "idContrato": "RF-C070-2018-035", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C069", "idContrato": "RF-C069-2018-034", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C069", "idContrato": "RF-C069-2018-033", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C068", "idContrato": "RF-C068-2018-032", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C067", "idContrato": "RF-C067-2018-031", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Inactivo", "derechos": "Exploración y Extracción"}, {"idContratista": "C066", "idContrato": "RF-C066-2018-030", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C065", "idContrato": "RF-C065-2018-029", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C064", "idContrato": "RF-C064-2018-028", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C064", "idContrato": "RF-C064-2018-027", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C063", "idContrato": "RF-C063-2018-026", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C062", "idContrato": "RF-C062-2018-025", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C032", "idContrato": "RF-C032-2018-024", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C032", "idContrato": "RF-C032-2018-023", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C032", "idContrato": "RF-C032-2018-022", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C026", "idContrato": "RF-C026-2018-021", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C061", "idContrato": "RF-C061-2018-020", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C060", "idContrato": "RF-C060-2018-019", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C060", "idContrato": "RF-C060-2018-018", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C059", "idContrato": "RF-C059-2018-017", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C058", "idContrato": "RF-C058-2018-016", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C057", "idContrato": "RF-C057-2018-015", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C054", "idContrato": "RF-C054-2018-014", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C053", "idContrato": "RF-C053-2018-013", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C053", "idContrato": "RF-C053-2018-012", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C056", "idContrato": "RF-C056-2018-011", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C055", "idContrato": "RF-C055-2018-010", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C054", "idContrato": "RF-C054-2018-009", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C054", "idContrato": "RF-C054-2018-008", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C054", "idContrato": "RF-C054-2018-007", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C053", "idContrato": "RF-C053-2018-006", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C053", "idContrato": "RF-C053-2018-005", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C052", "idContrato": "RF-C052-2018-004", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C051", "idContrato": "RF-C051-2018-003", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C050", "idContrato": "RF-C050-2018-002", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C036", "idContrato": "RF-C036-2018-001", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C046", "idContrato": "RF-C046-2017-029", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C045", "idContrato": "RF-C045-2017-033", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C045", "idContrato": "RF-C045-2017-032", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C045", "idContrato": "RF-C045-2017-031", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C044", "idContrato": "RF-C044-2017-030", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C043", "idContrato": "RF-C043-2017-040", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C043", "idContrato": "RF-C043-2017-039", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C042", "idContrato": "RF-C042-2017-038", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C042", "idContrato": "RF-C042-2017-037", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C042", "idContrato": "RF-C042-2017-036", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C042", "idContrato": "RF-C042-2017-035", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C042", "idContrato": "RF-C042-2017-034", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C049", "idContrato": "RF-C049-2017-041", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C045", "idContrato": "RF-C045-2017-026", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C048", "idContrato": "RF-C048-2017-028", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C047", "idContrato": "RF-C047-2017-027", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C046", "idContrato": "RF-C046-2017-025", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C043", "idContrato": "RF-C043-2017-022", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C045", "idContrato": "RF-C045-2017-024", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C044", "idContrato": "RF-C044-2017-023", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C042", "idContrato": "RF-C042-2017-021", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C041", "idContrato": "RF-C041-2017-018", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C040", "idContrato": "RF-C040-2017-020", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C039", "idContrato": "RF-C039-2017-017", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C038", "idContrato": "RF-C038-2017-016", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C037", "idContrato": "RF-C037-2017-015", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C036", "idContrato": "RF-C036-2017-014", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C035", "idContrato": "RF-C035-2017-013", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C034", "idContrato": "RF-C034-2017-012", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C033", "idContrato": "RF-C033-2017-011", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C003", "idContrato": "RF-C003-2017-019", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C032", "idContrato": "RF-C032-2017-010", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C029", "idContrato": "RF-C029-2017-006", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C031", "idContrato": "RF-C031-2017-009", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C030", "idContrato": "RF-C030-2017-008", "tipoContrato": "Licencia", "estado": "Baja de registro", "estatus": "Inactivo", "derechos": "Exploración y Extracción"}, {"idContratista": "C030", "idContrato": "RF-C030-2017-007", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Inactivo", "derechos": "Exploración y Extracción"}, {"idContratista": "C028", "idContrato": "RF-C028-2017-005", "tipoContrato": "Licencia", "estado": "Baja de registro", "estatus": "Inactivo", "derechos": "Exploración y Extracción"}, {"idContratista": "C027", "idContrato": "RF-C027-2017-004", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Inactivo", "derechos": "Exploración y Extracción"}, {"idContratista": "C027", "idContrato": "RF-C027-2017-003", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Inactivo", "derechos": "Exploración y Extracción"}, {"idContratista": "C026", "idContrato": "RF-C026-2017-002", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Inactivo", "derechos": "Exploración y Extracción"}, {"idContratista": "C025", "idContrato": "RF-C025-2017-001", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C024", "idContrato": "RF-C024-2016-025", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C023", "idContrato": "RF-C023-2016-024", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C022", "idContrato": "RF-C022-2016-023", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C021", "idContrato": "RF-C021-2016-022", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C014", "idContrato": "RF-C014-2016-027", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C007", "idContrato": "RF-C007-2016-026", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C020", "idContrato": "RF-C020-2016-021", "tipoContrato": "Licencia", "estado": "Baja de registro", "estatus": "Inactivo", "derechos": "Extracción"}, {"idContratista": "C019", "idContrato": "RF-C019-2016-020", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C018", "idContrato": "RF-C018-2016-019", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C017", "idContrato": "RF-C017-2016-018", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C016", "idContrato": "RF-C016-2016-017", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C015", "idContrato": "RF-C015-2016-016", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C015", "idContrato": "RF-C015-2016-015", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C014", "idContrato": "RF-C014-2016-014", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C014", "idContrato": "RF-C014-2016-013", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C014", "idContrato": "RF-C014-2016-012", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C013", "idContrato": "RF-C013-2016-011", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C013", "idContrato": "RF-C013-2016-010", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C012", "idContrato": "RF-C012-2016-009", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C011", "idContrato": "RF-C011-2016-008", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C010", "idContrato": "RF-C010-2016-007", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C009", "idContrato": "RF-C009-2016-006", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C008", "idContrato": "RF-C008-2016-005", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C007", "idContrato": "RF-C007-2016-004", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C006", "idContrato": "RF-C006-2016-003", "tipoContrato": "Licencia", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C005", "idContrato": "RF-C005-2016-002", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C004", "idContrato": "RF-C004-2016-001", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C003", "idContrato": "RF-C003-2015-003", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Extracción"}, {"idContratista": "C002", "idContrato": "RF-C002-2015-002", "tipoContrato": "Producción compartida", "estado": "Alta de registro", "estatus": "Activo", "derechos": "Exploración y Extracción"}, {"idContratista": "C001", "idContrato": "RF-C001-2015-001", "tipoContrato": "Producción compartida", "estado": "Baja de registro", "estatus": "Inactivo", "derechos": "Exploración y Extracción"}];
+
+        // Función para calcular estadísticas
+        function calcularEstadisticas(contratos) {
+            let altaRegistro = 0;
+            let bajaRegistro = 0;
+            let activos = 0;
+            let inactivos = 0;
+            let tipoLicencia = 0;
+            let tipoProduccion = 0;
+            let exploracionExtraccion = 0;
+            let soloExtraccion = 0;
+
+            contratos.forEach(contrato => {
+                // Contar por estado de registro
+                if (contrato.estado === "Alta de registro") {
+                    altaRegistro++;
+                } else if (contrato.estado === "Baja de registro") {
+                    bajaRegistro++;
+                }
+
+                // Contar por estatus
+                if (contrato.estatus === "Activo") {
+                    activos++;
+                } else if (contrato.estatus === "Inactivo") {
+                    inactivos++;
+                }
+
+                // Contar por tipo de contrato
+                if (contrato.tipoContrato === "Licencia") {
+                    tipoLicencia++;
+                } else if (contrato.tipoContrato === "Producción compartida") {
+                    tipoProduccion++;
+                }
+
+                // Contar por derechos
+                if (contrato.derechos === "Exploración y Extracción") {
+                    exploracionExtraccion++;
+                } else if (contrato.derechos === "Extracción") {
+                    soloExtraccion++;
+                }
+            });
+
+            return {
+                total: contratos.length,
+                altaRegistro,
+                bajaRegistro,
+                activos,
+                inactivos,
+                tipoLicencia,
+                tipoProduccion,
+                exploracionExtraccion,
+                soloExtraccion
+            };
+        }
+
+        // Función para animar los números
+        function animarNumero(elemento, valorFinal, duracion = 1200) {
+            const valorInicial = 0;
+            const pasos = 60;
+            const incremento = valorFinal / pasos;
+            let valorActual = valorInicial;
+            let paso = 0;
+
+            const interval = setInterval(() => {
+                paso++;
+                valorActual += incremento;
+                
+                if (paso >= pasos || valorActual >= valorFinal) {
+                    valorActual = valorFinal;
+                    clearInterval(interval);
+                }
+                
+                elemento.textContent = Math.floor(valorActual);
+            }, duracion / pasos);
+        }
+
+        // Actualizar el dashboard
+        function actualizarDashboard() {
+            const stats = calcularEstadisticas(datosContratos);
+
+            // Animar todos los valores
+            animarNumero(document.getElementById('totalContratos'), stats.total, 1500);
+            
+            setTimeout(() => {
+                animarNumero(document.getElementById('altaRegistro'), stats.altaRegistro);
+                animarNumero(document.getElementById('bajaRegistro'), stats.bajaRegistro);
+            }, 300);
+            
+            setTimeout(() => {
+                animarNumero(document.getElementById('activos'), stats.activos);
+                animarNumero(document.getElementById('inactivos'), stats.inactivos);
+            }, 500);
+            
+            setTimeout(() => {
+                animarNumero(document.getElementById('tipoLicencia'), stats.tipoLicencia);
+                animarNumero(document.getElementById('tipoProduccion'), stats.tipoProduccion);
+            }, 700);
+            
+            setTimeout(() => {
+                animarNumero(document.getElementById('exploracionExtraccion'), stats.exploracionExtraccion);
+                animarNumero(document.getElementById('soloExtraccion'), stats.soloExtraccion);
+            }, 900);
+        }
+
+        // Inicializar al cargar la página
+        actualizarDashboard();
+    </script>
+</body>
+</html>
